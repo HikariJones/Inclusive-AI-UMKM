@@ -7,9 +7,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Supabase PostgreSQL connection
+# Format: postgresql://postgres:[YOUR-PASSWORD]@[PROJECT-REF].supabase.co:5432/postgres
+# For connection pooling: postgresql://postgres:[YOUR-PASSWORD]@[PROJECT-REF].supabase.co:6543/postgres
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./umkm_db.sqlite")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+# Configure engine based on database type
+if DATABASE_URL.startswith("postgresql"):
+    # PostgreSQL/Supabase configuration with connection pooling
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=15,
+        max_overflow=10,
+        pool_pre_ping=True,  # Verify connections before using
+        echo=False  # Set to True for SQL query logging
+    )
+else:
+    # SQLite configuration (for local development/fallback)
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -54,6 +73,7 @@ class Payment(Base):
     
     # Additional info
     customer_name = Column(String(200))
+    bank_name = Column(String(100))  # BCA, Mandiri, GoPay, Dana, etc.
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     
