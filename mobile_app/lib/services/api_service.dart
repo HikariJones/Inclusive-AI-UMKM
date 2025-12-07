@@ -6,8 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Use different base URLs based on platform
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
   static const String baseUrl = 'http://127.0.0.1:8000'; // Flutter web / local desktop
 =======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   // For iOS Simulator on macOS: use 'http://localhost:8000'
   // For physical device: use your MacBook's IP address (e.g., 'http://192.168.0.103:8000')
   // To find your IP: run 'ifconfig | grep "inet " | grep -v 127.0.0.1' in terminal
@@ -16,6 +22,12 @@ class ApiService {
   // For iOS Simulator: use 'http://localhost:8000'
   // For physical iOS device: use 'http://192.168.0.103:8000' (your MacBook's IP)
   static const String baseUrl = 'http://localhost:8000'; // Perfect for macOS app!
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   // Use 'http://10.0.2.2:8000' for Android emulator
 
