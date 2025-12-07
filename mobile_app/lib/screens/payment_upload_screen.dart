@@ -28,7 +28,7 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
           _result = null;
           _validationStatus = null;
         });
-        
+
         // Auto-validate QRIS after image selection
         _validateQRIS();
       }
@@ -39,19 +39,20 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
 
   Future<void> _validateQRIS() async {
     if (_imageFile == null) return;
-    
+
     setState(() => _isProcessing = true);
-    
+
     try {
-      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+      final paymentProvider =
+          Provider.of<PaymentProvider>(context, listen: false);
       final result = await paymentProvider.uploadPaymentScreenshot(_imageFile!);
-      
+
       if (mounted) {
         setState(() {
           _result = result;
           _validationStatus = result['is_valid'] == true ? 'VALID' : 'INVALID';
         });
-        
+
         // Show validation result
         final isValid = result['is_valid'] == true;
         _showSnackBar(
@@ -77,9 +78,26 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
       return;
     }
 
-    // Already validated automatically, just show result
-    if (_result != null) {
-      _showSnackBar('Screenshot sudah divalidasi!', Colors.green);
+    // Already validated automatically, confirm and reset
+    if (_result != null && _validationStatus == 'VALID') {
+      _showSnackBar('✅ Pembayaran berhasil disimpan!', Colors.green);
+
+      // Refresh pending payments list
+      final paymentProvider =
+          Provider.of<PaymentProvider>(context, listen: false);
+      await paymentProvider.fetchPendingPayments();
+
+      // Reset UI to initial state
+      setState(() {
+        _imageFile = null;
+        _result = null;
+        _validationStatus = null;
+      });
+    } else if (_validationStatus == 'INVALID') {
+      _showSnackBar(
+          '❌ Pembayaran tidak valid, tidak bisa disimpan', Colors.red);
+    } else {
+      _showSnackBar('Tunggu validasi selesai...', Colors.orange);
     }
   }
 
@@ -116,9 +134,9 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Image Preview (mobile only - Image.file not supported on web)
           if (_imageFile != null && !kIsWeb)
             Card(
@@ -161,9 +179,9 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                 ],
               ),
             ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Image Source Buttons
           Row(
             children: [
@@ -190,48 +208,48 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Validation Status Indicator
           if (_validationStatus != null)
             Card(
-              color: _validationStatus == 'VALID' 
-                ? Colors.green.shade50 
-                : _validationStatus == 'INVALID'
-                ? Colors.red.shade50
-                : Colors.orange.shade50,
+              color: _validationStatus == 'VALID'
+                  ? Colors.green.shade50
+                  : _validationStatus == 'INVALID'
+                      ? Colors.red.shade50
+                      : Colors.orange.shade50,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
                   children: [
                     Icon(
-                      _validationStatus == 'VALID' 
-                        ? Icons.check_circle 
-                        : _validationStatus == 'INVALID'
-                        ? Icons.cancel
-                        : Icons.error,
-                      color: _validationStatus == 'VALID' 
-                        ? Colors.green 
-                        : _validationStatus == 'INVALID'
-                        ? Colors.red
-                        : Colors.orange,
+                      _validationStatus == 'VALID'
+                          ? Icons.check_circle
+                          : _validationStatus == 'INVALID'
+                              ? Icons.cancel
+                              : Icons.error,
+                      color: _validationStatus == 'VALID'
+                          ? Colors.green
+                          : _validationStatus == 'INVALID'
+                              ? Colors.red
+                              : Colors.orange,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        _validationStatus == 'VALID' 
-                          ? 'Pembayaran Valid ✅' 
-                          : _validationStatus == 'INVALID'
-                          ? 'Pembayaran Tidak Valid ❌'
-                          : 'Error pada validasi ⚠️',
+                        _validationStatus == 'VALID'
+                            ? 'Pembayaran Valid ✅'
+                            : _validationStatus == 'INVALID'
+                                ? 'Pembayaran Tidak Valid ❌'
+                                : 'Error pada validasi ⚠️',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _validationStatus == 'VALID' 
-                            ? Colors.green 
-                            : _validationStatus == 'INVALID'
-                            ? Colors.red
-                            : Colors.orange,
+                          color: _validationStatus == 'VALID'
+                              ? Colors.green
+                              : _validationStatus == 'INVALID'
+                                  ? Colors.red
+                                  : Colors.orange,
                         ),
                       ),
                     ),
@@ -239,33 +257,35 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Upload Button
           ElevatedButton.icon(
             onPressed: _isProcessing ? null : _uploadPayment,
-            icon: _isProcessing 
+            icon: _isProcessing
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
                   )
                 : const Icon(Icons.check),
             label: Text(_isProcessing ? 'Memproses...' : 'Konfirmasi & Simpan'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(16),
-              backgroundColor: _validationStatus == 'VALID' ? Colors.green : Colors.grey,
+              backgroundColor:
+                  _validationStatus == 'VALID' ? Colors.green : Colors.grey,
               foregroundColor: Colors.white,
             ),
           ),
-          
+
           // Results
           if (_result != null) ...[
             const SizedBox(height: 24),
             Card(
-              color: _result!['status'] == 'matched' 
-                  ? Colors.green.shade50 
+              color: _result!['status'] == 'matched'
+                  ? Colors.green.shade50
                   : Colors.orange.shade50,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -275,17 +295,17 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                     Row(
                       children: [
                         Icon(
-                          _result!['status'] == 'matched' 
-                              ? Icons.check_circle 
+                          _result!['status'] == 'matched'
+                              ? Icons.check_circle
                               : Icons.pending,
-                          color: _result!['status'] == 'matched' 
-                              ? Colors.green 
+                          color: _result!['status'] == 'matched'
+                              ? Colors.green
                               : Colors.orange,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _result!['status'] == 'matched' 
-                              ? 'Pembayaran Cocok!' 
+                          _result!['status'] == 'matched'
+                              ? 'Pembayaran Cocok!'
                               : 'Pending Validasi',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -296,20 +316,24 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                     ),
                     const Divider(),
                     if (_result!['extracted_data'] != null) ...[
-                      _InfoRow('Nominal', 'Rp ${_result!['extracted_data']['amount']}'),
-                      _InfoRow('Waktu', _result!['extracted_data']['timestamp'] ?? '-'),
-                      _InfoRow('Referensi', _result!['extracted_data']['reference'] ?? '-'),
+                      _InfoRow('Nominal',
+                          'Rp ${_result!['extracted_data']['amount']}'),
+                      _InfoRow('Waktu',
+                          _result!['extracted_data']['timestamp'] ?? '-'),
+                      _InfoRow('Referensi',
+                          _result!['extracted_data']['reference'] ?? '-'),
                       if (_result!['confidence'] != null)
-                        _InfoRow('Confidence', '${(_result!['confidence'] * 100).toStringAsFixed(1)}%'),
+                        _InfoRow('Confidence',
+                            '${(_result!['confidence'] * 100).toStringAsFixed(1)}%'),
                     ],
                   ],
                 ),
               ),
             ),
           ],
-          
+
           const SizedBox(height: 24),
-          
+
           // Pending Payments List
           const Text(
             'Pembayaran Pending',
@@ -319,13 +343,13 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          
+
           Consumer<PaymentProvider>(
             builder: (context, paymentProvider, child) {
               if (paymentProvider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               if (paymentProvider.pendingPayments.isEmpty) {
                 return const Card(
                   child: Padding(
@@ -340,7 +364,7 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                   ),
                 );
               }
-              
+
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -349,9 +373,11 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
                   final payment = paymentProvider.pendingPayments[index];
                   return Card(
                     child: ListTile(
-                      leading: const Icon(Icons.pending_actions, color: Colors.orange),
+                      leading: const Icon(Icons.pending_actions,
+                          color: Colors.orange),
                       title: Text('Rp ${payment['amount']}'),
-                      subtitle: Text(payment['timestamp'] ?? 'Tanggal tidak diketahui'),
+                      subtitle: Text(
+                          payment['timestamp'] ?? 'Tanggal tidak diketahui'),
                       trailing: Chip(
                         label: Text('${payment['confidence_score']}%'),
                         backgroundColor: Colors.orange.shade100,

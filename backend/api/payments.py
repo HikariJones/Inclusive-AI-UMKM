@@ -44,12 +44,13 @@ async def validate_payment_screenshot(
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    # Save uploaded image
-    upload_dir = "uploads/payment_screenshots"
+    # Save uploaded image - use absolute path from project root
+    project_root = Path(__file__).parent.parent.parent
+    upload_dir = project_root / "uploads" / "payment_screenshots"
     os.makedirs(upload_dir, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_path = os.path.join(upload_dir, f"{timestamp}_{file.filename}")
+    file_path = str(upload_dir / f"{timestamp}_{file.filename}")
     
     with open(file_path, "wb") as f:
         content = await file.read()
@@ -59,19 +60,38 @@ async def validate_payment_screenshot(
     try:
         validation_result = qris_validator.validate_qris_payment(file_path)
         
+        # Helper function to convert numpy types to native Python types
+        def to_native(val):
+            if val is None:
+                return None
+            if hasattr(val, 'item'):  # numpy scalar
+                return val.item()
+            if isinstance(val, dict):
+                return {k: to_native(v) for k, v in val.items()}
+            if isinstance(val, list):
+                return [to_native(v) for v in val]
+            return val
+        
+        # Convert all validation results to native Python types
+        validation_result = to_native(validation_result)
+        
+        # Generate unique reference number (timestamp + random)
+        import uuid
+        unique_ref = f"PAY_{timestamp}_{str(uuid.uuid4())[:8].upper()}"
+        
         # Create payment record with automatic validation
         payment = Payment(
-            amount=validation_result.get("amount", 0),
+            amount=validation_result.get("amount", 0) or 0,
             ocr_amount=validation_result.get("amount"),
             ocr_date=validation_result.get("timestamp"),
-            ocr_reference=validation_result.get("reference"),
+            ocr_reference=validation_result.get("reference"),  # Store OCR text here
             ocr_confidence=validation_result.get("ocr_confidence", 0),
             screenshot_path=file_path,
             payment_date=datetime.now(),
-            reference_number=validation_result.get("reference", f"REF_{timestamp}"),
+            reference_number=unique_ref,  # Use unique reference
             # Automatically mark as verified if validation passes
-            is_verified=validation_result.get("is_valid", False),
-            bank_name=validation_result.get("bank", "Unknown"),
+            is_verified=bool(validation_result.get("is_valid", False)),
+            bank_name=validation_result.get("bank") or "Unknown",
         )
         
         db.add(payment)
@@ -82,8 +102,8 @@ async def validate_payment_screenshot(
             "status": "success",
             "message": "Payment automatically validated",
             "payment_id": payment.id,
-            "is_valid": validation_result.get("is_valid", False),
-            "validation_confidence": validation_result.get("confidence", 0),
+            "is_valid": bool(validation_result.get("is_valid", False)),
+            "validation_confidence": float(validation_result.get("confidence", 0)),
             "extracted_data": {
                 "amount": validation_result.get("amount"),
                 "timestamp": validation_result.get("timestamp"),
@@ -92,11 +112,13 @@ async def validate_payment_screenshot(
                 "reference": validation_result.get("reference"),
             },
             "validation_details": validation_result.get("validation_details", {}),
-            "auto_verified": validation_result.get("is_valid", False),
+            "auto_verified": bool(validation_result.get("is_valid", False)),
             "next_step": "Waiting for bank notification" if not validation_result.get("is_valid") else "Payment valid - Ready for processing"
         }
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Payment validation failed: {str(e)}")
 
 
@@ -174,9 +196,16 @@ async def get_today_stats(db: Session = Depends(get_db)):
         Payment.is_verified == False
     ).scalar() or 0
     
+    avg_amount = total_amount / total_count if total_count > 0 else 0
+    
     return {
         "date": today.isoformat(),
-        "total_revenue": total_amount,
-        "verified_payments": total_count,
-        "pending_payments": pending_count
+        "total_amount": float(total_amount),  # For dashboard
+        "count": int(total_count),  # For dashboard
+        "avg_amount": float(avg_amount),  # For dashboard
+        "pending_count": int(pending_count),
+        # Also keep these for backwards compatibility
+        "total_revenue": float(total_amount),
+        "verified_payments": int(total_count),
+        "pending_payments": int(pending_count)
     }

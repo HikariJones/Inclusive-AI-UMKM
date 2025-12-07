@@ -32,6 +32,20 @@ class QRISValidator:
             # Extract payment information using OCR
             ocr_data = self.ocr.extract_payment_info(image_path)
             
+            # DEBUG LOGGING - print to terminal
+            print("\n" + "="*60)
+            print("🔍 OCR VALIDATION DEBUG LOG")
+            print("="*60)
+            print(f"📁 Image: {image_path}")
+            print(f"📊 OCR Data: {ocr_data}")
+            print(f"   - Amount: {ocr_data.get('amount')}")
+            print(f"   - Timestamp: {ocr_data.get('timestamp')}")
+            print(f"   - Bank: {ocr_data.get('bank')}")
+            print(f"   - Reference: {ocr_data.get('reference')}")
+            print(f"   - Confidence: {ocr_data.get('confidence')}")
+            print(f"   - Success: {ocr_data.get('success')}")
+            print("="*60 + "\n")
+            
             # Check if extraction was successful
             if not ocr_data.get('success', False):
                 return {
@@ -45,6 +59,12 @@ class QRISValidator:
             
             # Validate extracted data
             validation_result = self._validate_extracted_data(ocr_data, image_path)
+            
+            # DEBUG: Print validation result
+            print(f"✅ Validation Result: {validation_result.get('is_valid')}")
+            print(f"   - Confidence: {validation_result.get('confidence')}")
+            print(f"   - Details: {validation_result.get('validation_details')}")
+            print("="*60 + "\n")
             
             return validation_result
             
@@ -95,14 +115,18 @@ class QRISValidator:
         # Calculate overall confidence
         ocr_confidence = ocr_data.get('confidence', 0)
         
-        # Validation logic for QRIS
+        # FLEXIBLE Validation logic for QRIS
+        # Timestamp is optional for notification screenshots
+        # Very low confidence threshold for maximum flexibility
         is_valid = (
             amount_valid and 
-            timestamp_valid and 
             (payment_method_detected or qris_found) and
-            image_quality >= 0.5 and
-            ocr_confidence >= self.MIN_CONFIDENCE
+            ocr_confidence >= 0.25  # Lowered from 0.4 to 0.25 for notification screenshots
         )
+        
+        # If timestamp is valid, boost confidence
+        if timestamp_valid:
+            validation_details['timestamp_bonus'] = True
         
         # Calculate overall confidence score
         confidence_score = self._calculate_confidence(
@@ -114,16 +138,17 @@ class QRISValidator:
             image_quality
         )
         
+        # Convert numpy types to native Python types for JSON serialization
         return {
-            'is_valid': is_valid,
-            'confidence': round(confidence_score, 2),
-            'amount': amount,
+            'is_valid': bool(is_valid),  # Convert numpy.bool_ to Python bool
+            'confidence': float(round(confidence_score, 2)),
+            'amount': float(amount) if amount is not None else None,
             'timestamp': timestamp,
-            'payment_method': payment_method,
-            'bank': ocr_data.get('bank'),
-            'reference': ocr_data.get('reference'),
-            'validation_details': validation_details,
-            'ocr_confidence': round(ocr_confidence, 2)
+            'payment_method': str(payment_method) if payment_method else None,
+            'bank': str(ocr_data.get('bank')) if ocr_data.get('bank') else None,
+            'reference': str(ocr_data.get('reference')) if ocr_data.get('reference') else None,
+            'validation_details': {k: (bool(v) if isinstance(v, (bool, np.bool_)) else float(v) if isinstance(v, (float, np.floating)) else v) for k, v in validation_details.items()},
+            'ocr_confidence': float(round(ocr_confidence, 2))
         }
     
     def _validate_timestamp(self, timestamp: Optional[str]) -> bool:
