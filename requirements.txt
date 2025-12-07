@@ -11,6 +11,7 @@ passlib[argon2]==1.7.4
 # Database
 sqlalchemy==2.0.23
 alembic==1.13.0
+psycopg2-binary==2.9.9
 
 # Excel Export
 openpyxl==3.1.2
