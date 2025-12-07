@@ -1,12 +1,23 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Use different base URLs based on platform
+<<<<<<< Updated upstream
   static const String baseUrl = 'http://127.0.0.1:8000'; // Flutter web / local desktop
+=======
+  // For iOS Simulator on macOS: use 'http://localhost:8000'
+  // For physical device: use your MacBook's IP address (e.g., 'http://192.168.0.103:8000')
+  // To find your IP: run 'ifconfig | grep "inet " | grep -v 127.0.0.1' in terminal
+  // IMPORTANT: Remove trailing slash! Use 'http://localhost:8000' NOT 'http://localhost:8000/'
+  // For macOS app: use 'http://localhost:8000' (same machine)
+  // For iOS Simulator: use 'http://localhost:8000'
+  // For physical iOS device: use 'http://192.168.0.103:8000' (your MacBook's IP)
+  static const String baseUrl = 'http://localhost:8000'; // Perfect for macOS app!
+>>>>>>> Stashed changes
   // Use 'http://10.0.2.2:8000' for Android emulator
-  // Use 'http://YOUR_IP:8000' for physical device
 
   late Dio _dio;
 
@@ -14,9 +25,15 @@ class ApiService {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout:
-          const Duration(seconds: 10), // Fast fail if server unreachable
+          const Duration(seconds: 30), // Increased timeout
       receiveTimeout:
-          const Duration(seconds: 120), // Long wait for OCR processing
+          const Duration(seconds: 30), // Increased timeout
+      sendTimeout:
+          const Duration(seconds: 30), // Added send timeout
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     ));
 
     _dio.interceptors.add(InterceptorsWrapper(
@@ -34,19 +51,54 @@ class ApiService {
   // Authentication
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
-      // OAuth2PasswordRequestForm expects form data, not JSON
+      print('Attempting login to: ${_dio.options.baseUrl}/api/auth/token');
+      print('Username: $username');
+      
+      // Try using Dio's queryParameters with proper encoding
+      final uri = Uri.parse('${_dio.options.baseUrl}/api/auth/token');
+      final body = 'username=${Uri.encodeComponent(username)}&password=${Uri.encodeComponent(password)}';
+      
       final response = await _dio.post(
         '/api/auth/token',
-        data: FormData.fromMap({
-          'username': username,
-          'password': password,
-        }),
+        data: body,
         options: Options(
-          contentType: Headers.formUrlEncodedContentType,
+          contentType: 'application/x-www-form-urlencoded',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+          },
+          followRedirects: true,
+          maxRedirects: 5,
+          validateStatus: (status) {
+            return status != null && status < 500;
+          },
         ),
       );
-      return response.data;
+      
+      print('Login response status: ${response.statusCode}');
+      print('Login response data: ${response.data}');
+      
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        throw Exception('Login failed: ${response.data?['detail'] ?? 'Unknown error'}');
+      }
+    } on DioException catch (e) {
+      // Better error handling for Dio exceptions
+      print('DioException type: ${e.type}');
+      print('DioException message: ${e.message}');
+      print('Response data: ${e.response?.data}');
+      print('Status code: ${e.response?.statusCode}');
+      print('Request path: ${e.requestOptions.path}');
+      print('Request baseUrl: ${e.requestOptions.baseUrl}');
+      
+      if (e.response != null) {
+        throw Exception('Login failed: ${e.response?.data?['detail'] ?? e.message}');
+      } else {
+        throw Exception('Login failed: Connection error - ${e.message}');
+      }
     } catch (e) {
+      print('Login error: $e');
       throw Exception('Login failed: $e');
     }
   }

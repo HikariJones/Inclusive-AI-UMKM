@@ -1,0 +1,28 @@
+{
+  "name": "open_file_mac",
+  "version": "0.0.1",
+  "summary": "The MacOS implementation of open_file.",
+  "description": "A new Flutter plugin project.",
+  "homepage": "https://github.com/crazecoder/open_file/tree/master/open_file_mac",
+  "license": {
+    "file": "../LICENSE"
+  },
+  "authors": {
+    "crazecoder": "21527312@qq.com"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "Classes/**/*",
+  "dependencies": {
+    "FlutterMacOS": []
+  },
+  "platforms": {
+    "osx": "10.11"
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES"
+  },
+  "swift_versions": "5.0",
+  "swift_version": "5.0"
+}

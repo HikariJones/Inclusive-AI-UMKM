@@ -1,0 +1,6 @@
+framework module flutter_image_compress_macos {
+  umbrella header "flutter_image_compress_macos-umbrella.h"
+
+  export *
+  module * { export * }
+}

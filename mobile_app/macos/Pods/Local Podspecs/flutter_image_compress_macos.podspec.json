@@ -1,0 +1,28 @@
+{
+  "name": "flutter_image_compress_macos",
+  "version": "1.0.0",
+  "summary": "Flutter image compress for macOS",
+  "description": "Flutter image compress for macOS",
+  "homepage": "https://github.com/fluttercandies/flutter_image_compress",
+  "license": {
+    "file": "../LICENSE"
+  },
+  "authors": {
+    "Caijinglong": "cjl_spy@163.com"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "Classes/**/*",
+  "dependencies": {
+    "FlutterMacOS": []
+  },
+  "platforms": {
+    "osx": "10.15"
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES"
+  },
+  "swift_versions": "5.0",
+  "swift_version": "5.0"
+}

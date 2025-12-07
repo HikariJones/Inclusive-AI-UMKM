@@ -19,14 +19,14 @@ Mobile App (Flutter) → Camera/Gallery → Upload Payment/Report
                               ↓
                     FastAPI Backend (JWT Auth)
                               ↓
-                    Database (SQLite) + AI Forecasting
+                    Database (Supabase PostgreSQL) + AI Forecasting
 ```
 
 ## Tech Stack
 
 - **Frontend**: Flutter 3.0+ (Cross-platform mobile app)
 - **Backend**: Python FastAPI with JWT authentication
-- **Database**: SQLite (MVP) / PostgreSQL (production-ready)
+- **Database**: Supabase PostgreSQL (production-ready) / SQLite (local fallback)
 - **OCR**: EasyOCR (Indonesian + English support)
 - **Authentication**: JWT with bcrypt password hashing
 - **AI/ML**: Prophet for forecasting, pandas for data processing
@@ -76,6 +76,16 @@ inclusive-ai-umkm/
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+```
+
+**Step 1.5: Configure Supabase Database (Optional but Recommended)**
+```powershell
+# Create .env file in project root
+# Add your Supabase connection string:
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[PROJECT-REF].supabase.co:6543/postgres
+
+# Get connection string from: Supabase Dashboard → Settings → Database → Connection string
+# Use port 6543 for connection pooling (recommended) or 5432 for direct connection
 ```
 
 **Step 2: Install Flutter dependencies**
@@ -136,6 +146,65 @@ The app uses JWT token-based authentication:
 - Token auto-saved in SharedPreferences
 - Auto-login on app restart
 
+## 🗄️ Supabase Database Setup
+
+### Initial Setup
+
+1. **Create Supabase Project**
+   - Go to [supabase.com](https://supabase.com) and create a new project
+   - Wait for the project to be fully provisioned (2-3 minutes)
+
+2. **Get Connection String**
+   - Go to: **Settings → Database → Connection string**
+   - Select **Connection pooling** mode (port 6543) for better performance
+   - Copy the connection string
+   - Replace `[YOUR-PASSWORD]` with your database password
+
+3. **Configure Environment**
+   ```powershell
+   # Create .env file in project root
+   DATABASE_URL=postgresql://postgres:your_password@your-project.supabase.co:6543/postgres
+   ```
+
+4. **Test Connection**
+   ```powershell
+   python backend/scripts/test_supabase_connection.py
+   ```
+
+### Migrating from SQLite to Supabase
+
+If you have existing data in SQLite and want to migrate to Supabase:
+
+1. **Backup SQLite Database** (optional but recommended)
+   ```powershell
+   copy backend\umkm_db.sqlite backend\umkm_db.sqlite.backup
+   ```
+
+2. **Run Migration Script**
+   ```powershell
+   python backend/scripts/migrate_to_supabase.py
+   ```
+
+3. **Verify Migration**
+   - The script will show record counts for each table
+   - Check that all data was migrated successfully
+
+4. **Update .env File**
+   - Ensure `DATABASE_URL` points to Supabase
+   - Restart the backend server
+
+5. **Test Application**
+   ```powershell
+   python test_system.py
+   ```
+
+### Supabase Features
+
+- **Connection Pooling**: Use port 6543 for better performance with multiple connections
+- **Direct Connection**: Use port 5432 for direct database access
+- **Dashboard**: Access your database via Supabase dashboard for visual management
+- **Backups**: Automatic daily backups (on paid plans)
+
 ## 📖 Documentation
 
 - **[Mobile App Guide](mobile_app/README.md)** - Complete Flutter setup and usage
@@ -179,7 +248,7 @@ GET  /api/ocr/files                   # List user's files
 
 ### Backend
 - FastAPI for REST API
-- SQLAlchemy ORM with SQLite
+- SQLAlchemy ORM with Supabase PostgreSQL
 - EasyOCR for text extraction
 - Prophet for time-series forecasting
 - JWT with python-jose
@@ -210,7 +279,16 @@ pip install -r requirements.txt
 
 # Check Python version
 python --version  # Should be 3.8+
+
+# Check database connection
+python backend/scripts/test_supabase_connection.py
 ```
+
+### Database Connection Issues
+- **Connection refused**: Check your Supabase project is active and connection string is correct
+- **Authentication failed**: Verify your database password in the connection string
+- **Table not found**: Run migration script or ensure tables are created: `Base.metadata.create_all(bind=engine)`
+- **Connection timeout**: Use connection pooling (port 6543) instead of direct connection (port 5432)
 
 ### Flutter app can't connect
 - Backend must be running first

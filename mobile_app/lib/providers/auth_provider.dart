@@ -38,6 +38,11 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
+      // Log the actual error for debugging
+      print('Login error: $e');
+      if (e is Exception) {
+        print('Exception details: ${e.toString()}');
+      }
       return false;
     }
   }
