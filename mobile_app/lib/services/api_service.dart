@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Use different base URLs based on platform
-  static const String baseUrl = 'http://192.168.1.2:8000'; // Windows/iOS
+  static const String baseUrl = 'http://127.0.0.1:8000'; // Flutter web / local desktop
   // Use 'http://10.0.2.2:8000' for Android emulator
   // Use 'http://YOUR_IP:8000' for physical device
 

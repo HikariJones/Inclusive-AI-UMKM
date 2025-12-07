@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: isDark ? const Color(0xFF141824) : Colors.white,
+        backgroundColor: isDark ? const Color(0xFF141824) : const Color(0xFFF8FAFC),
         surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
@@ -85,22 +85,22 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
+                color: const Color(0xFF1f3a5f),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                Icons.store,
+                Icons.receipt_long_rounded,
                 color: Colors.white,
                 size: 18,
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              'UMKM Pro',
+              'ZACU',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : const Color(0xFF0f1c2e),
                 letterSpacing: -0.3,
               ),
             ),
@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(
               Icons.refresh,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : const Color(0xFF1f3a5f),
             ),
             onPressed: _loadData,
             tooltip: 'Refresh',
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return IconButton(
                 icon: Icon(
                   themeProvider.isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: isDark ? Colors.white : const Color(0xFF1f3a5f),
                 ),
                 onPressed: () {
                   themeProvider.toggleTheme();
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuButton<String>(
             icon: Icon(
               Icons.account_circle_outlined,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : const Color(0xFF1f3a5f),
             ),
             surfaceTintColor: Colors.transparent,
             itemBuilder: (context) => [
@@ -143,12 +143,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        color: const Color(0xFF4a90e2).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.person,
-                        color: Color(0xFF3B82F6),
+                        color: Color(0xFF1f3a5f),
                         size: 18,
                       ),
                     ),

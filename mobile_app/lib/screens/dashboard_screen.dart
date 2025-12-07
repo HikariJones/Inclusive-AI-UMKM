@@ -35,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: isDark ? Colors.white : const Color(0xFF0f1c2e),
                 letterSpacing: -0.5,
               ),
               ),
@@ -47,7 +47,7 @@ class DashboardScreen extends StatelessWidget {
                 'Ringkasan bisnis Anda hari ini',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6b7280),
                 fontWeight: FontWeight.w400,
               ),
               ),
