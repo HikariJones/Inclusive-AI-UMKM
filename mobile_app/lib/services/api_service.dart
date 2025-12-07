@@ -4,19 +4,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Use different base URLs based on platform
-  static const String baseUrl = 'http://localhost:8000'; // Windows/iOS
+  static const String baseUrl = 'http://192.168.1.2:8000'; // Windows/iOS
   // Use 'http://10.0.2.2:8000' for Android emulator
   // Use 'http://YOUR_IP:8000' for physical device
-  
+
   late Dio _dio;
-  
+
   ApiService() {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout:
+          const Duration(seconds: 10), // Fast fail if server unreachable
+      receiveTimeout:
+          const Duration(seconds: 120), // Long wait for OCR processing
     ));
-    
+
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final prefs = await SharedPreferences.getInstance();
@@ -28,7 +30,7 @@ class ApiService {
       },
     ));
   }
-  
+
   // Authentication
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
@@ -48,7 +50,7 @@ class ApiService {
       throw Exception('Login failed: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> register(Map<String, String> userData) async {
     try {
       final response = await _dio.post('/api/auth/register', data: userData);
@@ -57,21 +59,22 @@ class ApiService {
       throw Exception('Registration failed: $e');
     }
   }
-  
+
   // Payment APIs
   Future<Map<String, dynamic>> uploadPaymentScreenshot(File imageFile) async {
     try {
       FormData formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(imageFile.path),
       });
-      
-      final response = await _dio.post('/api/payments/validate-screenshot', data: formData);
+
+      final response =
+          await _dio.post('/api/payments/validate-screenshot', data: formData);
       return response.data;
     } catch (e) {
       throw Exception('Failed to upload screenshot: $e');
     }
   }
-  
+
   Future<List<dynamic>> getPendingPayments() async {
     try {
       final response = await _dio.get('/api/payments/pending');
@@ -80,7 +83,7 @@ class ApiService {
       throw Exception('Failed to get pending payments: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getTodayStats() async {
     try {
       final response = await _dio.get('/api/payments/stats/today');
@@ -89,7 +92,7 @@ class ApiService {
       throw Exception('Failed to get stats: $e');
     }
   }
-  
+
   // Inventory APIs
   Future<List<dynamic>> getInventory() async {
     try {
@@ -99,7 +102,7 @@ class ApiService {
       throw Exception('Failed to get inventory: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getLowStockItems() async {
     try {
       final response = await _dio.get('/api/inventory/low-stock');
@@ -108,7 +111,7 @@ class ApiService {
       throw Exception('Failed to get low stock items: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getForecast(int productId) async {
     try {
       final response = await _dio.get('/api/inventory/forecast/$productId');
@@ -117,34 +120,36 @@ class ApiService {
       throw Exception('Failed to get forecast: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> processInvoiceImage(File imageFile) async {
     try {
       FormData formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(imageFile.path),
       });
-      
-      final response = await _dio.post('/api/inventory/process-invoice', data: formData);
+
+      final response =
+          await _dio.post('/api/inventory/process-invoice', data: formData);
       return response.data;
     } catch (e) {
       throw Exception('Failed to process invoice: $e');
     }
   }
-  
+
   // NEW: Book Report OCR to Excel
   Future<Map<String, dynamic>> convertBookToExcel(File imageFile) async {
     try {
       FormData formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(imageFile.path),
       });
-      
-      final response = await _dio.post('/api/ocr/book-to-excel', data: formData);
+
+      final response =
+          await _dio.post('/api/ocr/book-to-excel', data: formData);
       return response.data;
     } catch (e) {
       throw Exception('Failed to convert book to excel: $e');
     }
   }
-  
+
   // Download Excel file
   Future<String> downloadExcel(String fileId, String savePath) async {
     try {

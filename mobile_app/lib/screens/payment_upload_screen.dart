@@ -38,7 +38,7 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
           _result = null;
           _validationStatus = null;
         });
-        
+
         // Auto-validate QRIS after image selection
         _validateQRIS();
       }
@@ -49,19 +49,20 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
 
   Future<void> _validateQRIS() async {
     if (_imageFile == null) return;
-    
+
     setState(() => _isProcessing = true);
-    
+
     try {
-      final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+      final paymentProvider =
+          Provider.of<PaymentProvider>(context, listen: false);
       final result = await paymentProvider.uploadPaymentScreenshot(_imageFile!);
-      
+
       if (mounted) {
         setState(() {
           _result = result;
           _validationStatus = result['is_valid'] == true ? 'VALID' : 'INVALID';
         });
-        
+
         // Show validation result
         final isValid = result['is_valid'] == true;
         _showSnackBar(
@@ -87,9 +88,26 @@ class _PaymentUploadScreenState extends State<PaymentUploadScreen> {
       return;
     }
 
-    // Already validated automatically, just show result
-    if (_result != null) {
-      _showSnackBar('Screenshot sudah divalidasi!', Colors.green);
+    // Already validated automatically, confirm and reset
+    if (_result != null && _validationStatus == 'VALID') {
+      _showSnackBar('✅ Pembayaran berhasil disimpan!', Colors.green);
+
+      // Refresh pending payments list
+      final paymentProvider =
+          Provider.of<PaymentProvider>(context, listen: false);
+      await paymentProvider.fetchPendingPayments();
+
+      // Reset UI to initial state
+      setState(() {
+        _imageFile = null;
+        _result = null;
+        _validationStatus = null;
+      });
+    } else if (_validationStatus == 'INVALID') {
+      _showSnackBar(
+          '❌ Pembayaran tidak valid, tidak bisa disimpan', Colors.red);
+    } else {
+      _showSnackBar('Tunggu validasi selesai...', Colors.orange);
     }
   }
 
