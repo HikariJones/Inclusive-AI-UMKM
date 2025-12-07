@@ -167,4 +167,68 @@ class ApiService {
       throw Exception('Failed to download excel: $e');
     }
   }
+  
+  // CRUD Operations for Inventory
+  Future<Map<String, dynamic>> addProduct({
+    required String name,
+    String? sku,
+    double? price,
+    int? quantity,
+    int? minQuantity,
+  }) async {
+    try {
+      final response = await _dio.post('/api/inventory/products', data: {
+        'name': name,
+        if (sku != null) 'sku': sku,
+        if (price != null) 'price': price,
+        if (quantity != null) 'current_stock': quantity,  // Backend uses current_stock
+        if (minQuantity != null) 'min_stock': minQuantity,  // Backend uses min_stock
+      });
+      return response.data;
+    } catch (e) {
+      throw Exception('Failed to add product: $e');
+    }
+  }
+  
+  Future<Map<String, dynamic>> updateProduct({
+    required int productId,
+    required String name,
+    String? sku,
+    double? price,
+    int? minQuantity,
+  }) async {
+    try {
+      final response = await _dio.put('/api/inventory/products/$productId', data: {
+        'name': name,
+        if (sku != null) 'sku': sku,
+        if (price != null) 'price': price,
+        if (minQuantity != null) 'min_stock': minQuantity,  // Backend uses min_stock
+      });
+      return response.data;
+    } catch (e) {
+      throw Exception('Failed to update product: $e');
+    }
+  }
+  
+  Future<Map<String, dynamic>> updateProductQuantity({
+    required int productId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await _dio.patch('/api/inventory/products/$productId/quantity', data: {
+        'quantity': quantity,
+      });
+      return response.data;
+    } catch (e) {
+      throw Exception('Failed to update product quantity: $e');
+    }
+  }
+  
+  Future<void> deleteProduct(int productId) async {
+    try {
+      await _dio.delete('/api/inventory/products/$productId');
+    } catch (e) {
+      throw Exception('Failed to delete product: $e');
+    }
+  }
 }

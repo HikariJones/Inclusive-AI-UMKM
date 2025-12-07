@@ -1,68 +1,82 @@
-# Environment
-.env
-*.env
-!.env.example
+# ===================================
+# HANYA PUSH FLUTTER/DART (mobile_app/)
+# IGNORE SEMUA YANG LAIN
+# ===================================
 
-# Python
+# Ignore everything at root
+/*
+
+# Except mobile_app folder and this .gitignore
+!mobile_app/
+!.gitignore
+
+# Backend - Ignore all Python
+backend/
+*.py
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-myenv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-!mobile_app/lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
 # Database
 *.sqlite
 *.db
 
+# Uploads
+uploads/
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Python dependencies
+requirements.txt
+
+# Setup scripts (Python)
+setup.ps1
+setup_demo.py
+init_db.py
+create_user.py
+test_system.py
+run_backend.ps1
+
+# Documentation files
+*.md
+
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 logs/
 
-# OCR temporary files
-temp_images/
-processed_images/
-
 # ML Models
-*.pkl
 *.h5
 *.pt
-models/weights/
-
-# OS
-.DS_Store
-Thumbs.db
+*.pkl
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
 
+# Build artifacts
+dist/
+*.egg-info/
+
+# Temporary
+temp/
+tmp/
+*.tmp
+
 # Jupyter
 .ipynb_checkpoints/
+
+# Hackathon folder (if exists)
+hackathon/

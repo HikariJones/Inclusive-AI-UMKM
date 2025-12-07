@@ -85,94 +85,204 @@ class _BookOcrScreenState extends State<BookOcrScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Konversi Buku ke Excel'),
-        backgroundColor: Colors.blue,
-      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Info Card
-            Card(
-              color: Colors.blue.shade50,
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '📖 Cara Penggunaan:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 8),
-                    Text('1. Ambil foto halaman buku laporan'),
-                    Text('2. Pastikan tulisan jelas dan pencahayaan baik'),
-                    Text('3. Klik "Proses OCR"'),
-                    Text('4. Download hasil dalam format Excel'),
-                  ],
+            // Header Section
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF141824) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF10B981),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Buku ke Excel',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Konversi otomatis dengan AI',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        _StepItem(1, 'Foto halaman buku laporan', Icons.camera_alt, isDark),
+                        const SizedBox(height: 12),
+                        _StepItem(2, 'AI ekstrak data otomatis', Icons.smart_toy, isDark),
+                        const SizedBox(height: 12),
+                        _StepItem(3, 'Download file Excel', Icons.table_chart, isDark),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             // Image Preview
             if (_imageFile != null)
-              Card(
-                elevation: 4,
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF141824) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   child: Image.file(
                     _imageFile!,
-                    height: 300,
+                    height: 350,
                     fit: BoxFit.cover,
                   ),
                 ),
               )
             else
               Container(
-                height: 300,
+                height: 280,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey.shade100,
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.image, size: 64, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('Belum ada gambar dipilih'),
+                    Icon(
+                      Icons.book_outlined,
+                      size: 72,
+                      color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Belum ada foto',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Upload foto halaman buku',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
-            // Image Source Buttons
+            // Action Buttons
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _pickImage(ImageSource.camera),
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text('Ambil Foto'),
+                    icon: const Icon(Icons.camera_alt, size: 20),
+                    label: const Text(
+                      'Kamera',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () => _pickImage(ImageSource.gallery),
-                    icon: const Icon(Icons.photo_library),
-                    label: const Text('Dari Galeri'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
+                    icon: const Icon(Icons.photo_library, size: 20),
+                    label: const Text(
+                      'Galeri',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: Color(0xFF10B981), width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -182,93 +292,178 @@ class _BookOcrScreenState extends State<BookOcrScreen> {
             const SizedBox(height: 16),
             
             // Process Button
-            ElevatedButton.icon(
-              onPressed: _isProcessing ? null : _processBookReport,
-              icon: _isProcessing 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.auto_awesome),
-              label: Text(_isProcessing ? 'Memproses...' : 'Proses OCR'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+            if (_imageFile != null && _ocrResult == null)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isProcessing ? null : _processBookReport,
+                  icon: _isProcessing
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.auto_awesome, size: 22),
+                  label: Text(
+                    _isProcessing ? 'Memproses...' : 'Proses OCR',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                    disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.5),
+                  ),
+                ),
               ),
-            ),
             
             // Results Section
             if (_ocrResult != null) ...[
               const SizedBox(height: 24),
-              Card(
-                color: Colors.green.shade50,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text(
-                            'Hasil Ekstraksi',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(),
-                      Text('Baris ditemukan: ${_ocrResult!['rows_extracted'] ?? 0}'),
-                      Text('Kolom ditemukan: ${_ocrResult!['columns_detected'] ?? 0}'),
-                      if (_ocrResult!['preview'] != null) ...[
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Preview Data:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withOpacity(0.3),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                          child: const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
                           child: Text(
-                            _ocrResult!['preview'],
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 12,
+                            'Berhasil Diekstrak!',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF059669),
                             ),
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Download Button
-              ElevatedButton.icon(
-                onPressed: _isProcessing ? null : _downloadExcel,
-                icon: const Icon(Icons.download),
-                label: const Text('Download Excel'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Total: ${_ocrResult!['item_count'] ?? 0} item terdeteksi',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF059669),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _downloadExcel,
+                        icon: const Icon(Icons.download, size: 22),
+                        label: const Text(
+                          'Download Excel',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
+            const SizedBox(height: 20),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StepItem extends StatelessWidget {
+  final int number;
+  final String text;
+  final IconData icon;
+  final bool isDark;
+
+  const _StepItem(this.number, this.text, this.icon, this.isDark);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              '$number',
+              style: const TextStyle(
+                color: Color(0xFF10B981),
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Icon(
+          icon,
+          size: 18,
+          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

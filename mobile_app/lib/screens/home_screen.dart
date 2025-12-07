@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/payment_provider.dart';
 import '../providers/inventory_provider.dart';
+import '../providers/theme_provider.dart';
 import 'dashboard_screen.dart';
 import 'payment_upload_screen.dart';
 import 'inventory_screen.dart';
@@ -17,10 +18,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  bool _showPaymentHistory = false;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const PaymentUploadScreen(),
+  void _navigateToTab(int index, {bool showHistory = false}) {
+    setState(() {
+      _currentIndex = index;
+      if (index == 1) {
+        _showPaymentHistory = showHistory;
+      } else {
+        _showPaymentHistory = false; // Reset when navigating away
+      }
+    });
+  }
+
+  List<Widget> get _screens => [
+    DashboardScreen(onNavigate: (index) => _navigateToTab(index, showHistory: true)),
+    PaymentUploadScreen(key: ValueKey(_showPaymentHistory), showHistory: _showPaymentHistory),
     const InventoryScreen(),
     const BookOcrScreen(),
   ];
@@ -58,31 +71,114 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('UMKM Payment Validator'),
-        backgroundColor: Colors.blue,
+        elevation: 0,
+        backgroundColor: isDark ? const Color(0xFF141824) : Colors.white,
+        surfaceTintColor: Colors.transparent,
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.store,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'UMKM Pro',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(
+              Icons.refresh,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
             onPressed: _loadData,
+            tooltip: 'Refresh',
           ),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+                onPressed: () {
+                  themeProvider.toggleTheme();
+                },
+                tooltip: themeProvider.isDarkMode ? 'Light Mode' : 'Dark Mode',
+              );
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.account_circle_outlined,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+            surfaceTintColor: Colors.transparent,
             itemBuilder: (context) => [
-              PopupMenuItem(
-                child: ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(
-                    Provider.of<AuthProvider>(context, listen: false).username ?? 'User',
-                  ),
+              PopupMenuItem<String>(
+                enabled: false,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: Color(0xFF3B82F6),
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      Provider.of<AuthProvider>(context, listen: false).username ?? 'User',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const PopupMenuItem(
+              const PopupMenuDivider(),
+              PopupMenuItem<String>(
                 value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Logout', style: TextStyle(color: Colors.red)),
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout, color: Color(0xFFDC2626), size: 18),
+                    SizedBox(width: 12),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: Color(0xFFDC2626),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -93,36 +189,84 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        onTap: (index) {
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF141824) : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              width: 1,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.grid_view_rounded, 'Dashboard', isDark),
+                _buildNavItem(1, Icons.upload_outlined, 'Upload', isDark),
+                _buildNavItem(2, Icons.inventory_2_outlined, 'Stok', isDark),
+                _buildNavItem(3, Icons.description_outlined, 'Excel', isDark),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label, bool isDark) {
+    final isSelected = _currentIndex == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF3B82F6).withOpacity(0.2) : const Color(0xFF0F172A).withOpacity(0.08))
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF3B82F6) : const Color(0xFF0F172A))
+                      : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF3B82F6) : const Color(0xFF0F172A))
+                      : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.upload_file),
-            label: 'Upload',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Stok',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Buku ke Excel',
-          ),
-        ],
+        ),
       ),
     );
   }
